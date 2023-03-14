@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Real-time console log</title>
+  </head>
+  <body>
+    <ul id="messages"></ul>
+    <script>
+      const socket = new WebSocket('ws://localhost:8080');
+
+      socket.addEventListener('message', function (event) {
+        const message = event.data;
+        const li = document.createElement('li');
+        li.textContent = message;
+        document.getElementById('messages').appendChild(li);
+      });
+    </script>
+  </body>
+</html>
