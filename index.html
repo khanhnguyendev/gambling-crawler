@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Gambling Crawler</title>
-  </head>
-  <body>
-    <ul id="messages"></ul>
-    <script>
-      const socket = new WebSocket('ws://crawler.up.railway.app:8080');
-
-      socket.addEventListener('message', function (event) {
-        const message = event.data;
-        const li = document.createElement('li');
-        li.textContent = message;
-        document.getElementById('messages').appendChild(li);
-      });
-    </script>
-  </body>
+<head>
+  <title>Gambling Crawler</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    socket.on('log', (msg) => {
+      const logDiv = document.getElementById('log');
+      const logLine = document.createElement('div');
+      logLine.innerText = msg;
+      logDiv.appendChild(logLine);
+    });
+  </script>
+</head>
+<body>
+  <div id="log"></div>
+</body>
 </html>
