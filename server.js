@@ -15,19 +15,19 @@ async function crawler() {
   
   await page.goto('https://csgoempire.com/');
 
-  const divContainingClass = await page.waitForSelector('.previous-rolls-enter-active');
+  const divContainingClass = await page.waitForSelector('.bet-btn--win');
   const divContent = await page.evaluate(div => div.innerHTML, divContainingClass);
   
   const now = new Date();
   const timestamp = now.toLocaleString();
 
-  if (divContent.includes('coin-t')) {
+  if (divContent.includes('alt="t"')) {
     console.log(timestamp, 'coin-t');
     io.emit('log', `${timestamp} - T`);
-  } else if (divContent.includes('coin-ct')) {
+  } else if (divContent.includes('alt="ct"')) {
     console.log(timestamp, 'coin-ct');
     io.emit('log', `${timestamp} - CT`);
-  } else if (divContent.includes('coin-bonus')) {
+  } else if (divContent.includes('alt="bonus"')) {
     console.log(timestamp, 'coin-bonus');
     io.emit('log', `${timestamp} - Bonus`);
   }
