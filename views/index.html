@@ -11,6 +11,8 @@
   <script>
     const socket = io();
     let lastBonus = 0;
+    let totalT = 0;
+    let totalCT = 0;
     let totalBonus = 0;
     let total = 0;
 
@@ -19,12 +21,22 @@
         total += 1;
         lastBonus += 1;
       }
+      if (msg === 'T') {
+        totalT += 1;
+        lastBonus = 0
+      }
+      if (msg === 'CT') {
+        totalCT += 1;
+        lastBonus = 0
+      }
       if (msg === 'Bonus') {
         totalBonus += 1;
         lastBonus = 0
       }
 
       document.getElementById('lastBonus').innerHTML = lastBonus
+      document.getElementById('totalT').innerHTML = totalT
+      document.getElementById('totalCT').innerHTML = totalCT
       document.getElementById('totalBonus').innerHTML = totalBonus
       document.getElementById('totalDsp').innerHTML = total
 
@@ -100,7 +112,11 @@
     <span class="coin-wh coin-t"></span>
     <span>Last Bonus: <span id="lastBonus"></span></span>
     </br>
-    <span>Totals Bonus: <span id="totalBonus"></span></span>
+    <span>T: <span id="totalT"></span></span>
+    </br>
+    <span>CT: <span id="totalCT"></span></span>
+    </br>
+    <span>Bonus: <span id="totalBonus"></span></span>
     </br>
     <span>Totals: <span id="totalDsp"></span></span>
   </div>
