@@ -1,16 +1,21 @@
 const puppeteer = require('puppeteer');
-const app = require('express')();
+const express = require('express'); // <-- add this line
+const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
+const path = require('path');
 
 const PORT = process.env.PORT || 3000;
 
+app.use(express.static(path.join(__dirname, "public")));
+
 app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/index.html');
+  res.sendFile(__dirname + '/views/index.html');
 });
 
 async function crawler() {
-  const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
+  // const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
+  const browser = await puppeteer.launch();
   const page = await browser.newPage();
   
   await page.goto('https://csgoempire.com/');
@@ -23,13 +28,13 @@ async function crawler() {
 
   if (divContent.includes('alt="t"')) {
     console.log(timestamp, 'coin-t');
-    io.emit('log', `${timestamp} - T`);
+    io.emit('log', `T`);
   } else if (divContent.includes('alt="ct"')) {
     console.log(timestamp, 'coin-ct');
-    io.emit('log', `${timestamp} - CT`);
+    io.emit('log', `CT`);
   } else if (divContent.includes('alt="bonus"')) {
     console.log(timestamp, 'coin-bonus');
-    io.emit('log', `${timestamp} - Bonus`);
+    io.emit('log', `Bonus`);
   }
 
   await browser.close();
