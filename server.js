@@ -17,7 +17,8 @@ async function crawler() {
   const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
   // const browser = await puppeteer.launch();
   const page = await browser.newPage();
-  
+
+  page.setDefaultNavigationTimeout(40000);
   await page.goto('https://csgoempire.com/');
 
   const divContainingClass = await page.waitForSelector('.bet-btn--win');
@@ -26,14 +27,19 @@ async function crawler() {
   const now = new Date();
   const timestamp = now.toLocaleString();
 
+  let lastBonus = 0;
+
   if (divContent.includes('alt="t"')) {
     console.log(timestamp, 'coin-t');
+    lastBonus += 1;
     io.emit('log', `T`);
   } else if (divContent.includes('alt="ct"')) {
     console.log(timestamp, 'coin-ct');
+    lastBonus += 1;
     io.emit('log', `CT`);
   } else if (divContent.includes('alt="bonus"')) {
     console.log(timestamp, 'coin-bonus');
+    lastBonus = 0;
     io.emit('log', `Bonus`);
   }
 
