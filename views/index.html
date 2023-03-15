@@ -23,11 +23,9 @@
       }
       if (msg === 'T') {
         totalT += 1;
-        lastBonus = 0
       }
       if (msg === 'CT') {
         totalCT += 1;
-        lastBonus = 0
       }
       if (msg === 'Bonus') {
         totalBonus += 1;
@@ -112,13 +110,14 @@
     <span class="coin-wh coin-t"></span>
     <span>Last Bonus: <span id="lastBonus"></span></span>
     </br>
-    <span>T: <span id="totalT"></span></span>
-    </br>
-    <span>CT: <span id="totalCT"></span></span>
-    </br>
-    <span>Bonus: <span id="totalBonus"></span></span>
-    </br>
     <span>Totals: <span id="totalDsp"></span></span>
+    </br>
+    </br>
+    <div class="log-line coin-t"></div><span id="totalT"></span>
+    </br>
+    <div class="log-line coin-ct"></div><span id="totalCT"></span>
+    </br>
+    <div class="log-line coin-bonus"></div><span id="totalBonus"></span>
   </div>
 
 </body>
