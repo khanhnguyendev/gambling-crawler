@@ -1,9 +1,6 @@
 <!DOCTYPE html>
 <html>
 
-<!DOCTYPE html>
-<html>
-
 <head>
   <title>Gambling Crawler</title>
   <script src="/socket.io/socket.io.js"></script>
@@ -24,7 +21,21 @@
       const currentRowIndex = Math.floor(currentIndex / 10);
       const currentCellIndex = currentIndex % 10;
 
-      const currentCell = document.querySelector(`#myTable tbody tr:nth-child(${currentRowIndex + 1}) td:nth-child(${currentCellIndex + 1})`);
+      let currentRow = document.querySelector(`#myTable tbody tr:nth-child(${currentRowIndex + 1})`);
+      if (!currentRow) {
+        currentRow = document.createElement('tr');
+        document.querySelector('#myTable tbody').appendChild(currentRow);
+      }
+
+      let currentCell = document.querySelector(`#myTable tbody tr:nth-child(${currentRowIndex + 1}) td:nth-child(${currentCellIndex + 1})`);
+      if (!currentCell) {
+        for (let i = 0; i < 10; i++) {
+          currentCell = document.createElement('td');
+          currentCell.classList.add('text-center');
+        }
+        currentRow.appendChild(currentCell);
+      }
+
       currentCell.appendChild(logDiv);
     });
   </script>
