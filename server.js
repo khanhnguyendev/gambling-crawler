@@ -18,7 +18,12 @@ async function crawler() {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
 
-  page.setDefaultNavigationTimeout(40000);
+  try {
+    await page.waitForSelector('.bet-btn--win', { timeout: 40000 });
+  } catch (err) {
+    console.log('Error waiting for selector:', err);
+  }
+
   await page.goto('https://csgoempire.com/');
 
   const divContainingClass = await page.waitForSelector('.bet-btn--win');

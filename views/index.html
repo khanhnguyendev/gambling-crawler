@@ -32,6 +32,13 @@
         lastBonus = 0
       }
 
+      function resetIndex() {
+        const rows = document.querySelectorAll('#myTable tbody tr');
+        for (let i = 0; i < rows.length; i++) {
+          rows[i].querySelector('.index-cell').textContent = i + 1;
+        }
+      }
+
       document.getElementById('lastBonus').innerHTML = lastBonus
       document.getElementById('totalT').innerHTML = totalT
       document.getElementById('totalCT').innerHTML = totalCT
@@ -66,6 +73,10 @@
         indexCell.classList.add('index-cell');
         indexCell.classList.add('text-center');
         currentRow.appendChild(indexCell);
+
+        if (currentRowIndex === 3) {
+          document.querySelector('#myTable tbody tr:nth-child(1)').remove();
+        }
       }
 
       let currentCell = document.querySelector(`#myTable tbody tr:nth-child(${currentRowIndex + 1}) td:nth-child(${currentCellIndex + 2})`);
