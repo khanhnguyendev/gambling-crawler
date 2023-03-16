@@ -1,9 +1,10 @@
 const puppeteer = require('puppeteer');
-const express = require('express'); // <-- add this line
+const express = require('express');
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 const path = require('path');
+const fs = require('fs');
 
 const PORT = process.env.PORT || 3000;
 
@@ -14,47 +15,55 @@ app.get('/', (req, res) => {
 });
 
 async function crawler() {
-  // const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
 
   try {
-    await page.waitForSelector('.bet-btn--win', { timeout: 3000 });
+    await page.goto('https://csgoempire.com/', { timeout: 60000 });
+    await page.waitForSelector('.bet-btn--win', { timeout: 60000 });
   } catch (err) {
     console.log('Error waiting for selector:', err);
   }
 
-  await page.goto('https://csgoempire.com/');
-
   const divContainingClass = await page.waitForSelector('.bet-btn--win');
   const divContent = await page.evaluate(div => div.innerHTML, divContainingClass);
-  
+
   const now = new Date();
   const timestamp = now.toLocaleString();
 
-  let lastBonus = 0;
+  let msgType = '';
 
   if (divContent.includes('alt="t"')) {
     console.log(timestamp, 'coin-t');
-    lastBonus += 1;
     io.emit('log', `T`);
+    msgType = 'T';
   } else if (divContent.includes('alt="ct"')) {
     console.log(timestamp, 'coin-ct');
-    lastBonus += 1;
     io.emit('log', `CT`);
+    msgType = 'CT';
   } else if (divContent.includes('alt="bonus"')) {
     console.log(timestamp, 'coin-bonus');
-    lastBonus = 0;
     io.emit('log', `Bonus`);
+    msgType = 'Bonus';
   }
+
+  // Write the log to file
+  const logLine = `${timestamp},${msgType}\n`;
+  fs.appendFile(__dirname + '/data/logs.txt', logLine, (err) => {
+    if (err) throw err;
+  });
 
   await browser.close();
 }
 
 async function loop() {
+  io.on('connection', (socket) => {
+    console.log('client connected');
+  });
+
   while (true) {
     await crawler();
-    await delay(1000); // delay for 1 seconds before next iteration
+    await delay(1000); // delay for 1 second before next iteration
   }
 }
 
@@ -63,10 +72,6 @@ function delay(ms) {
 }
 
 loop();
-
-io.on('connection', (socket) => {
-  console.log('client connected');
-});
 
 http.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
