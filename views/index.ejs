@@ -141,7 +141,7 @@
           <tr>
             <td class="text-center"><%= row %></td>
             <% for (var j = 0; j < 10 && i+j < logs.length; j++) { %>
-              <td class="text-center <%= logs[i+j].coin %>"></td>
+              <td class="text-center"><div class="log-line <%= logs[i+j].coin %>"></div></td>
             <% } %>
             <% if (i+j >= logs.length && j < 10) { %>
               <% for (var k = j; k < 10; k++) { %>

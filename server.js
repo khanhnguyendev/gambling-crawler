@@ -61,11 +61,12 @@ async function crawler() {
 
   // Write the log to file
   const logsFilePath = __dirname + '/data/logs.json';
-
+  const newLog = { timestamp, coin: msgType };
+  
   try {
     const logsContent = await fs.promises.readFile(logsFilePath, 'utf8');
     const logs = JSON.parse(logsContent);
-    logs.unshift({ timestamp, coin: msgType });
+    logs.push(newLog);
     await fs.promises.writeFile(logsFilePath, JSON.stringify(logs));
   } catch (err) {
     console.error('Error writing log to file:', err);
