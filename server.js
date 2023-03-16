@@ -19,7 +19,7 @@ async function crawler() {
   const page = await browser.newPage();
 
   try {
-    await page.waitForSelector('.bet-btn--win', { timeout: 40000 });
+    await page.waitForSelector('.bet-btn--win', { timeout: 3000 });
   } catch (err) {
     console.log('Error waiting for selector:', err);
   }
@@ -54,7 +54,7 @@ async function crawler() {
 async function loop() {
   while (true) {
     await crawler();
-    await delay(3000); // delay for 3 seconds before next iteration
+    await delay(1000); // delay for 1 seconds before next iteration
   }
 }
 
