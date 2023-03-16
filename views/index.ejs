@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
     integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   <!-- <script defer src="../script/main.js"></script> -->
-  <script>
+  <!-- <script>
     const socket = io();
     let lastBonus = 0;
     let totalT = 0;
@@ -30,13 +30,6 @@
       if (msg === 'Bonus') {
         totalBonus += 1;
         lastBonus = 0
-      }
-
-      function resetIndex() {
-        const rows = document.querySelectorAll('#myTable tbody tr');
-        for (let i = 0; i < rows.length; i++) {
-          rows[i].querySelector('.index-cell').textContent = i + 1;
-        }
       }
 
       document.getElementById('lastBonus').innerHTML = lastBonus
@@ -77,6 +70,13 @@
           document.querySelector('#myTable tbody tr:nth-child(1)').remove();
           resetIndex()
         }
+
+        function resetIndex() {
+          const rows = document.querySelectorAll('#myTable tbody tr');
+          for (let i = 0; i < rows.length; i++) {
+            rows[i].querySelector('.index-cell').textContent = i + 1;
+          }
+        }
       }
 
       let currentCell = document.querySelector(`#myTable tbody tr:nth-child(${currentRowIndex + 1}) td:nth-child(${currentCellIndex + 2})`);
@@ -90,13 +90,13 @@
 
       currentCell.appendChild(logDiv);
     });
-  </script>
+  </script> -->
 </head>
 
 <body>
   <div class="container">
-    <div id="log"></div>
-    <table id="myTable" class="table table-bordered">
+    
+    <!-- <table id="myTable" class="table table-bordered">
       <thead>
         <tr>
           <th class="text-center" style="width: 50px;">Index</th>
@@ -117,7 +117,43 @@
           <td class="text-center">1</td>
         </tr>
       </tbody>
+    </table> -->
+    <table id="myTable" class="table table-bordered">
+      <thead>
+        <tr>
+          <th class="text-center" style="width: 50px;">Index</th>
+          <th class="text-center">1</th>
+          <th class="text-center">2</th>
+          <th class="text-center">3</th>
+          <th class="text-center">4</th>
+          <th class="text-center">5</th>
+          <th class="text-center">6</th>
+          <th class="text-center">7</th>
+          <th class="text-center">8</th>
+          <th class="text-center">9</th>
+          <th class="text-center">10</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% var counter = 0 %>
+        <% var row = 1 %>
+        <% for (var i = 0; i < logs.length && row <= 12; i += 10) { %>
+          <tr>
+            <td class="text-center"><%= row %></td>
+            <% for (var j = 0; j < 10 && i+j < logs.length; j++) { %>
+              <td class="text-center <%= logs[i+j].coin %>"></td>
+            <% } %>
+            <% if (i+j >= logs.length && j < 10) { %>
+              <% for (var k = j; k < 10; k++) { %>
+                <td class="text-center"></td>
+              <% } %>
+            <% } %>
+          </tr>
+          <% row++ %>
+        <% } %>
+      </tbody>
     </table>
+    
     <span class="coin-wh coin-t"></span>
     <span>Last Bonus: <span id="lastBonus"></span></span>
     </br>
