@@ -3,14 +3,21 @@ const express = require("express");
 const app = express();
 const http = require("http").Server(app);
 const io = require("socket.io")(http);
+const config = require("./config/config");
 const fs = require("fs");
 const mongoose = require("mongoose");
+const axios = require("axios");
 
 const EmpireSchema = require("./models/Empire");
 const PORT = process.env.PORT || 3000;
 
+const botToken = process.env.BOT_TOKEN || config.bot.token;
+const chatId = process.env.CHAT_ID || config.bot.chatId;
+let totalsBonus = 0;
+let lastBonus = 0;
+
 //connect to db
-mongoose.connect(process.env.DB_URI || require("./config/config").db.uri);
+mongoose.connect(process.env.DB_URI || config.db.uri);
 
 const connection = mongoose.connection;
 
@@ -26,6 +33,11 @@ app.set("view engine", "ejs");
 app.get("/", async (req, res) => {
   try {
     const latestLogs = await EmpireSchema.find().limit(120);
+    latestLogs.forEach((log) => {
+      if (log._doc.coin == "coin-bonus") {
+        totalsBonus += 1;
+      }
+    });
     res.render("index", { logs: latestLogs });
   } catch (err) {
     console.error(err);
@@ -59,19 +71,38 @@ async function crawler() {
     console.log(timestamp, "coin-t");
     io.emit("log", `coin-t`);
     msgType = "coin-t";
+    lastBonus += 1;
   } else if (divContent.includes('alt="ct"')) {
     console.log(timestamp, "coin-ct");
     io.emit("log", `coin-ct`);
     msgType = "coin-ct";
+    lastBonus += 1;
   } else if (divContent.includes('alt="bonus"')) {
     console.log(timestamp, "coin-bonus");
     io.emit("log", `coin-bonus`);
     msgType = "coin-bonus";
+    lastBonus = 0;
+  }
+
+  // teltegram BOT
+  if (lastBonus > 0) {
+    axios
+      .post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        chat_id: chatId,
+        text: `TEST: Đã ${lastBonus} cây chưa có DICE`,
+      })
+      .then((response) => {
+        console.log("Message sent successfully");
+      })
+      .catch((error) => {
+        console.error("Error sending message:", error);
+      });
   }
 
   // save to database
-  const empire = new EmpireSchema({timestamp: timestamp, coin: msgType});
-  empire.save()
+  const empire = new EmpireSchema({ timestamp: timestamp, coin: msgType });
+  empire
+    .save()
     .then(() => {
       console.log("Log saved to database");
     })
@@ -90,7 +121,6 @@ async function loop() {
     );
     console.log("client connected:", clientIp);
   });
-  
 
   while (true) {
     await crawler();
