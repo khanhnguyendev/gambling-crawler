@@ -14,6 +14,8 @@ const PORT = process.env.PORT || 3000;
 const botToken = process.env.BOT_TOKEN || config.bot.token;
 const chatId = process.env.CHAT_ID || config.bot.chatId;
 let totalsBonus = 0;
+let totalsT = 0;
+let totalsCT = 0;
 let lastBonus = 0;
 
 //connect to db
@@ -34,11 +36,17 @@ app.get("/", async (req, res) => {
   try {
     const latestLogs = await EmpireSchema.find().limit(120);
     latestLogs.forEach((log) => {
+      if (log._doc.coin == "coin-t") {
+        totalsT += 1;
+      }
+      if (log._doc.coin == "coin-ct") {
+        totalsCT += 1;
+      }
       if (log._doc.coin == "coin-bonus") {
         totalsBonus += 1;
       }
     });
-    res.render("index", { logs: latestLogs });
+    res.render("index", { logs: latestLogs, totalsT: totalsT, totalsCT: totalsCT, totalsBonus: totalsBonus });
   } catch (err) {
     console.error(err);
     res.status(500).send("Error retrieving logs from database");
@@ -85,11 +93,11 @@ async function crawler() {
   }
 
   // teltegram BOT
-  if (lastBonus > 0) {
+  if (lastBonus > 30) {
     axios
       .post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
         chat_id: chatId,
-        text: `TEST: Đã ${lastBonus} cây chưa có DICE`,
+        text: `Đã ${lastBonus} cây chưa có DICE`,
       })
       .then((response) => {
         console.log("Message sent successfully");
