@@ -100,21 +100,12 @@ async function crawler() {
     io.emit("log", `coin-bonus`);
     msgType = "coin-bonus";
     lastBonus = 0;
+    teleBOT(`DICEEEEEE!!!!!!!`)
   }
 
   // teltegram BOT
   if (lastBonus > 30) {
-    axios
-      .post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-        chat_id: chatId,
-        text: `Đã ${lastBonus} cây chưa có DICE`,
-      })
-      .then((response) => {
-        console.log("Message sent successfully");
-      })
-      .catch((error) => {
-        console.error("Error sending message:", error);
-      });
+    teleBOT(`Đã ${lastBonus} cây chưa có DICE`)
   }
 
   // save to database
@@ -144,6 +135,20 @@ async function loop() {
     await crawler();
     await delay(1000); // delay for 1 second before next iteration
   }
+}
+
+function teleBOT(message) {
+  axios
+    .post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      chat_id: chatId,
+      text: message,
+    })
+    .then((response) => {
+      console.log("Message sent successfully");
+    })
+    .catch((error) => {
+      console.error("Error sending message:", error);
+    });
 }
 
 function delay(ms) {
