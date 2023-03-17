@@ -13,9 +13,6 @@ const PORT = process.env.PORT || 3000;
 
 const botToken = process.env.BOT_TOKEN || config.bot.token;
 const chatId = process.env.CHAT_ID || config.bot.chatId;
-let totalsBonus = 0;
-let totalsT = 0;
-let totalsCT = 0;
 let lastBonus = 0;
 
 //connect to db
@@ -34,7 +31,19 @@ app.set("view engine", "ejs");
 
 app.get("/", async (req, res) => {
   try {
-    const latestLogs = await EmpireSchema.find().limit(120);
+    let totalsBonus = 0;
+    let totalsT = 0;
+    let totalsCT = 0;
+
+    // Get the total count of logs in the database
+    const endIndex = await EmpireSchema.countDocuments();
+    let startIndex = 0
+    if (endIndex > 120) {
+      startIndex = endIndex - 120;
+    }
+
+    const latestLogs = await EmpireSchema.find().skip(startIndex).limit(endIndex);
+
     latestLogs.forEach((log) => {
       if (log._doc.coin == "coin-t") {
         totalsT += 1;
@@ -46,6 +55,7 @@ app.get("/", async (req, res) => {
         totalsBonus += 1;
       }
     });
+
     res.render("index", { logs: latestLogs, totalsT: totalsT, totalsCT: totalsCT, totalsBonus: totalsBonus });
   } catch (err) {
     console.error(err);
