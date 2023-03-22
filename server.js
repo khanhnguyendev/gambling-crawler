@@ -71,6 +71,15 @@ async function crawler() {
     await page.goto("https://csgoempire.com/", { timeout: 60000 });
     await page.waitForSelector(".bet-btn--win", { timeout: 60000 });
   } catch (err) {
+    let messsage = `Error waiting for selector... \n Server will automatically restart...`
+    teleBOT(messsage)
+    const timestamp = new Date().toISOString();
+    const logMsg = `${timestamp}: ${err.stack}\n`;
+    fs.appendFile('logs.json', logMsg, (err) => {
+      if (err) {
+        console.error('Failed to write to logs.txt:', err);
+      }
+    });
     console.log("Error waiting for selector:", err);
   }
 
@@ -116,7 +125,8 @@ async function crawler() {
       console.log("Log saved to database");
     })
     .catch((err) => {
-      console.error("Error saving log to database:", err);
+      teleBOT(`Saving result to database error...`)
+      console.error("Saving result to database error: \n", err);
     });
 
   await browser.close();
@@ -138,17 +148,17 @@ async function loop() {
 }
 
 function teleBOT(message) {
-  axios
-    .post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-      chat_id: chatId,
-      text: message,
-    })
-    .then((response) => {
-      console.log("Message sent successfully");
-    })
-    .catch((error) => {
-      console.error("Error sending message:", error);
-    });
+  // axios
+  //   .post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+  //     chat_id: chatId,
+  //     text: message,
+  //   })
+  //   .then((response) => {
+  //     console.log("Message sent successfully");
+  //   })
+  //   .catch((error) => {
+  //     console.error("Error sending message:", error);
+  //   });
 }
 
 function delay(ms) {
@@ -158,5 +168,6 @@ function delay(ms) {
 loop();
 
 http.listen(PORT, () => {
+  teleBOT(`Server started...`)
   console.log(`Server listening on port ${PORT}`);
 });

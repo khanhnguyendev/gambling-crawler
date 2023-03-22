@@ -1,5 +1,9 @@
 module.exports = {
   db: {
-    uri: "mongodb+srv://khanhnguyendev:Khanhnguyen97@groupordershopeefood.gjgtfwr.mongodb.net/?retryWrites=true&w=majority",
+    uri: "", // place your mongodb uri here
   },
+  bot: {
+    token: "", // place your bot token here
+    chatId: "" // place your chat id here
+  }
 };
