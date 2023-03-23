@@ -83,10 +83,12 @@ async function crawler() {
     // Create an interval that decrements the countdown every second
     const interval = setInterval(() => {
       countdown--;
+      console.log(`Waiting... ${countdown}`)
       if (countdown === 0) {
+        console.log(`Restarting server....`)
+        let messsage = `Error waiting for selector... \nServer will automatically restart...`;
         // Create a timer for 30 seconds
         const timer = setTimeout(() => {
-          let messsage = `Error waiting for selector... \nServer will automatically restart...`;
           teleBOT(messsage);
         }, 1000);
         // Clear the timer if the selector is found before the timeout
