@@ -77,8 +77,8 @@ async function crawler() {
   try {
     await page.goto("https://csgoempire.com/", { timeout: 60000 });
 
-    // Set the countdown time to 59 seconds
-    let countdown = 59;
+    // Set the countdown time to 30 seconds
+    let countdown = 30;
 
     // Create an interval that decrements the countdown every second
     const interval = setInterval(async () => {
@@ -88,8 +88,8 @@ async function crawler() {
         console.log(`Restarting server....`)
         // clear timer
         clearInterval(interval);
-        
-        let messsage = `Error waiting for selector... \nServer will automatically restart...`;
+
+        let messsage = `Error waiting more than 30 second\nMissing result \nServer will automatically restart...`;
         await teleBOT(messsage);
 
         const timestamp = new Date().toISOString();
@@ -175,17 +175,17 @@ async function loop() {
 }
 
 async function teleBOT(message) {
-  await axios
-    .post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-      chat_id: chatId,
-      text: message,
-    })
-    .then((response) => {
-      console.log("Message sent successfully");
-    })
-    .catch((error) => {
-      console.error("Error sending message:", error);
-    });
+  // await axios
+  //   .post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+  //     chat_id: chatId,
+  //     text: message,
+  //   })
+  //   .then((response) => {
+  //     console.log("Message sent successfully");
+  //   })
+  //   .catch((error) => {
+  //     console.error("Error sending message:", error);
+  //   });
 }
 
 function delay(ms) {
