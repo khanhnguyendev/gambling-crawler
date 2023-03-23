@@ -175,17 +175,17 @@ async function loop() {
 }
 
 async function teleBOT(message) {
-  // await axios
-  //   .post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-  //     chat_id: chatId,
-  //     text: message,
-  //   })
-  //   .then((response) => {
-  //     console.log("Message sent successfully");
-  //   })
-  //   .catch((error) => {
-  //     console.error("Error sending message:", error);
-  //   });
+  await axios
+    .post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      chat_id: chatId,
+      text: message,
+    })
+    .then((response) => {
+      console.log("Message sent successfully");
+    })
+    .catch((error) => {
+      console.error("Error sending message:", error);
+    });
 }
 
 function delay(ms) {
