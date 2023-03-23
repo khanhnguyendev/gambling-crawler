@@ -37,12 +37,14 @@ app.get("/", async (req, res) => {
 
     // Get the total count of logs in the database
     const endIndex = await EmpireSchema.countDocuments();
-    let startIndex = 0
+    let startIndex = 0;
     if (endIndex > 120) {
       startIndex = endIndex - 120;
     }
 
-    const latestLogs = await EmpireSchema.find().skip(startIndex).limit(endIndex);
+    const latestLogs = await EmpireSchema.find()
+      .skip(startIndex)
+      .limit(endIndex);
 
     latestLogs.forEach((log) => {
       if (log._doc.coin == "coin-t") {
@@ -56,7 +58,12 @@ app.get("/", async (req, res) => {
       }
     });
 
-    res.render("index", { logs: latestLogs, totalsT: totalsT, totalsCT: totalsCT, totalsBonus: totalsBonus });
+    res.render("index", {
+      logs: latestLogs,
+      totalsT: totalsT,
+      totalsCT: totalsCT,
+      totalsBonus: totalsBonus,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).send("Error retrieving logs from database");
@@ -69,17 +76,31 @@ async function crawler() {
 
   try {
     await page.goto("https://csgoempire.com/", { timeout: 60000 });
+
+    // Set the countdown time to 59 seconds
+    let countdown = 59;
+
+    // Create an interval that decrements the countdown every second
+    const interval = setInterval(() => {
+      countdown--;
+      console.log(`Countdown: ${countdown}`);
+    }, 1000);
+
+    if (countdown === 0) {
+      let messsage = `Error waiting for selector... \n Server will automatically restart...`;
+      teleBOT(messsage);
+      const timestamp = new Date().toISOString();
+      const logMsg = `${timestamp}: ${messsage}\n`;
+      fs.appendFile("logs.json", logMsg, (err) => {
+        if (err) {
+          console.error("Failed to write to logs.txt:", err);
+        }
+      });
+    }
+
     await page.waitForSelector(".bet-btn--win", { timeout: 60000 });
+
   } catch (err) {
-    let messsage = `Error waiting for selector... \n Server will automatically restart...`
-    teleBOT(messsage)
-    const timestamp = new Date().toISOString();
-    const logMsg = `${timestamp}: ${err.stack}\n`;
-    fs.appendFile('logs.json', logMsg, (err) => {
-      if (err) {
-        console.error('Failed to write to logs.txt:', err);
-      }
-    });
     console.log("Error waiting for selector:", err);
   }
 
@@ -109,12 +130,12 @@ async function crawler() {
     io.emit("log", `coin-bonus`);
     msgType = "coin-bonus";
     lastBonus = 0;
-    teleBOT(`DICEEEEEE!!!!!!!`)
+    teleBOT(`DICEEEEEE!!!!!!!`);
   }
 
   // teltegram BOT
   if (lastBonus > 30) {
-    teleBOT(`Đã ${lastBonus} cây chưa có DICE`)
+    teleBOT(`Đã ${lastBonus} cây chưa có DICE`);
   }
 
   // save to database
@@ -125,7 +146,7 @@ async function crawler() {
       console.log("Log saved to database");
     })
     .catch((err) => {
-      teleBOT(`Saving result to database error...`)
+      teleBOT(`Saving result to database error...`);
       console.error("Saving result to database error: \n", err);
     });
 
@@ -148,17 +169,17 @@ async function loop() {
 }
 
 function teleBOT(message) {
-  // axios
-  //   .post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-  //     chat_id: chatId,
-  //     text: message,
-  //   })
-  //   .then((response) => {
-  //     console.log("Message sent successfully");
-  //   })
-  //   .catch((error) => {
-  //     console.error("Error sending message:", error);
-  //   });
+  axios
+    .post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      chat_id: chatId,
+      text: message,
+    })
+    .then((response) => {
+      console.log("Message sent successfully");
+    })
+    .catch((error) => {
+      console.error("Error sending message:", error);
+    });
 }
 
 function delay(ms) {
@@ -168,6 +189,6 @@ function delay(ms) {
 loop();
 
 http.listen(PORT, () => {
-  teleBOT(`Server started...`)
+  teleBOT(`Server started...`);
   console.log(`Server listening on port ${PORT}`);
 });
