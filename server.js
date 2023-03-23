@@ -83,20 +83,18 @@ async function crawler() {
     // Create an interval that decrements the countdown every second
     const interval = setInterval(() => {
       countdown--;
-      console.log(`Countdown: ${countdown}`);
+      if (countdown === 0) {
+        let messsage = `Error waiting for selector... \n Server will automatically restart...`;
+        teleBOT(messsage);
+        const timestamp = new Date().toISOString();
+        const logMsg = `${timestamp}: ${messsage}\n`;
+        fs.appendFile("logs.json", logMsg, (err) => {
+          if (err) {
+            console.error("Failed to write to logs.txt:", err);
+          }
+        });
+      }
     }, 1000);
-
-    if (countdown === 0) {
-      let messsage = `Error waiting for selector... \n Server will automatically restart...`;
-      teleBOT(messsage);
-      const timestamp = new Date().toISOString();
-      const logMsg = `${timestamp}: ${messsage}\n`;
-      fs.appendFile("logs.json", logMsg, (err) => {
-        if (err) {
-          console.error("Failed to write to logs.txt:", err);
-        }
-      });
-    }
 
     await page.waitForSelector(".bet-btn--win", { timeout: 60000 });
 
@@ -120,17 +118,20 @@ async function crawler() {
     io.emit("log", `coin-t`);
     msgType = "coin-t";
     lastBonus += 1;
+    clearInterval(interval);
   } else if (divContent.includes('alt="ct"')) {
     console.log(timestamp, "coin-ct");
     io.emit("log", `coin-ct`);
     msgType = "coin-ct";
     lastBonus += 1;
+    clearInterval(interval);
   } else if (divContent.includes('alt="bonus"')) {
     console.log(timestamp, "coin-bonus");
     io.emit("log", `coin-bonus`);
     msgType = "coin-bonus";
     lastBonus = 0;
     teleBOT(`DICEEEEEE!!!!!!!`);
+    clearInterval(interval);
   }
 
   // teltegram BOT
