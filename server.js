@@ -84,8 +84,14 @@ async function crawler() {
     const interval = setInterval(() => {
       countdown--;
       if (countdown === 0) {
-        let messsage = `Error waiting for selector... \n Server will automatically restart...`;
-        teleBOT(messsage);
+        // Create a timer for 30 seconds
+        const timer = setTimeout(() => {
+          let messsage = `Error waiting for selector... \nServer will automatically restart...`;
+          teleBOT(messsage);
+        }, 1000);
+        // Clear the timer if the selector is found before the timeout
+        clearTimeout(timer);
+
         const timestamp = new Date().toISOString();
         const logMsg = `${timestamp}: ${messsage}\n`;
         fs.appendFile("logs.json", logMsg, (err) => {
