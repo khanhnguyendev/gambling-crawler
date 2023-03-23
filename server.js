@@ -168,8 +168,8 @@ async function loop() {
   }
 }
 
-function teleBOT(message) {
-  axios
+async function teleBOT(message) {
+  await axios
     .post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       chat_id: chatId,
       text: message,
