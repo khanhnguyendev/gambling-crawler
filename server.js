@@ -98,6 +98,8 @@ async function crawler() {
 
     await page.waitForSelector(".bet-btn--win", { timeout: 60000 });
 
+    // clear timer
+    clearInterval(interval);
   } catch (err) {
     console.log("Error waiting for selector:", err);
   }
@@ -118,20 +120,17 @@ async function crawler() {
     io.emit("log", `coin-t`);
     msgType = "coin-t";
     lastBonus += 1;
-    clearInterval(interval);
   } else if (divContent.includes('alt="ct"')) {
     console.log(timestamp, "coin-ct");
     io.emit("log", `coin-ct`);
     msgType = "coin-ct";
     lastBonus += 1;
-    clearInterval(interval);
   } else if (divContent.includes('alt="bonus"')) {
     console.log(timestamp, "coin-bonus");
     io.emit("log", `coin-bonus`);
     msgType = "coin-bonus";
     lastBonus = 0;
     teleBOT(`DICEEEEEE!!!!!!!`);
-    clearInterval(interval);
   }
 
   // teltegram BOT
