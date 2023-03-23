@@ -86,6 +86,9 @@ async function crawler() {
       console.log(`Waiting... ${countdown}`)
       if (countdown === 0) {
         console.log(`Restarting server....`)
+        // clear timer
+        clearInterval(interval);
+        
         let messsage = `Error waiting for selector... \nServer will automatically restart...`;
         await teleBOT(messsage);
 
