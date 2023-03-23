@@ -140,8 +140,8 @@ async function crawler() {
   }
 
   // teltegram BOT
-  if (lastBonus > 30) {
-    teleBOT(`Đã ${lastBonus} cây chưa có DICE`);
+  if (lastBonus > 25) {
+    teleBOT(`${lastBonus} cây chưa có DICE`);
   }
 
   // save to database
