@@ -135,7 +135,7 @@ async function crawler() {
     console.log(timestamp, "coin-bonus");
     io.emit("log", `coin-bonus`);
     msgType = "coin-bonus";
-    lastBonus += 1;
+    lastBonus = 0;
     teleBOT(`DICEEEEEE!!!!!!!`);
   }
 
