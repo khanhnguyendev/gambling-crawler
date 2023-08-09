@@ -8,7 +8,7 @@ const fs = require("fs");
 const mongoose = require("mongoose");
 const axios = require("axios");
 const cors = require("cors");
-// const puppeteerConfig = require('./.puppeteerrc.cjs');
+const puppeteerConfig = require('./.puppeteerrc.cjs');
 require('dotenv').config();
 
 const EmpireSchema = require("./models/Empire");
@@ -77,9 +77,9 @@ app.get("/", async (req, res) => {
 
 async function crawler() {
   const browser = await puppeteer.launch({
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    // executablePath: puppeteerConfig.executablePath,
-    // args: [`--user-data-dir=${puppeteerConfig.cacheDirectory}`, '--no-sandbox'],
+    // args: [, '--disable-setuid-sandbox'],
+    executablePath: puppeteerConfig.executablePath,
+    args: [`--user-data-dir=${puppeteerConfig.cacheDirectory}`,'--no-sandbox']
   });
   const page = await browser.newPage();
 
