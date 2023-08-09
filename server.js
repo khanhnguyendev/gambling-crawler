@@ -76,8 +76,7 @@ app.get("/api/home", async (req, res) => {
 
 async function crawler() {
   const browser = await puppeteer.launch({
-    headless: true, // Set to false if you want to see the browser UI
-    args: ['--no-sandbox'] // Add the --no-sandbox flag
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
   });
   const page = await browser.newPage();
 
