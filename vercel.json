@@ -12,14 +12,6 @@
         "dest": "package.json"
       }
     ],
-    "env": {
-      "NODE_ENV": "production"
-    },
-    "install": {
-      "dest": "/var/task",
-      "command": "npm install"
-    },
-    "build": {},
     "dev": {
       "command": "npm run dev"
     }
