@@ -7,6 +7,7 @@ const config = require("./config/config");
 const fs = require("fs");
 const mongoose = require("mongoose");
 const axios = require("axios");
+require('dotenv').config();
 
 const EmpireSchema = require("./models/Empire");
 const PORT = process.env.PORT || 3000;
