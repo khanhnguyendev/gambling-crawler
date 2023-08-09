@@ -7,6 +7,7 @@ const config = require("./config/config");
 const fs = require("fs");
 const mongoose = require("mongoose");
 const axios = require("axios");
+const cors = require("cors");
 require('dotenv').config();
 
 const EmpireSchema = require("./models/Empire");
@@ -25,12 +26,14 @@ connection.once("open", () => {
   console.log("MongoDB database connected");
 });
 
+app.use(cors());
+
 app.use(express.static(__dirname + "/public"));
 app.use(express.urlencoded({ extended: true }));
 app.set("views", __dirname + "/views");
 app.set("view engine", "ejs");
 
-app.get("/", async (req, res) => {
+app.get("/api/home", async (req, res) => {
   try {
     let totalsBonus = 0;
     let totalsT = 0;
