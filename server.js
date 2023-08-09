@@ -72,7 +72,10 @@ app.get("/", async (req, res) => {
 });
 
 async function crawler() {
-  const browser = await puppeteer.launch();
+  const browser = await puppeteer.launch({
+    headless: true, // Set to false if you want to see the browser UI
+    args: ['--no-sandbox'] // Add the --no-sandbox flag
+  });
   const page = await browser.newPage();
 
   try {
