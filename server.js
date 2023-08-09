@@ -89,7 +89,7 @@ async function crawler() {
       countdown--;
       console.log(`Waiting... ${countdown}`)
       if (countdown === 0) {
-        console.log(`Restarting server....`)
+        console.log(`Restarting server...`)
         // clear timer
         clearInterval(interval);
 
