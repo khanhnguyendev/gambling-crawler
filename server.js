@@ -93,7 +93,7 @@ async function crawler() {
         // clear timer
         clearInterval(interval);
 
-        let messsage = `Error waiting more than 30 second\nMissing result \nServer will automatically restart...`;
+        let messsage = `Error waiting more than 30 second\nServer will automatically restart...`;
         await teleBOT(messsage);
 
         const timestamp = new Date().toISOString();
