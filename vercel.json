@@ -13,16 +13,12 @@
   ],
   "routes": [
     {
-      "src": "/api/(.*)",
+      "src": "/((?!.*\\.\\w+$).*)",
       "dest": "/server.js"
     },
     {
-        "src": "/",
-        "dest": "views/index.ejs"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/server.js"
+      "src": "/(.+\\.[a-z]+)$",
+      "dest": "/public/$1"
     }
   ]
 }
