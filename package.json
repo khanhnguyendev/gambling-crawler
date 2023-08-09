@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "engines": {
-    "node": ">=14 <16"
+    "node": "16.16.0"
   },
   "scripts": {
     "deploy": "node server.js",
