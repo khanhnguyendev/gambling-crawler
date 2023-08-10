@@ -16,7 +16,6 @@ const PORT = process.env.PORT || 3000;
 const botToken = process.env.BOT_TOKEN;
 const chatId = process.env.CHAT_ID;
 let lastBonus = 0;
-let isCrawling = false; // Locking mechanism
 
 async function startServer() {
   await mongoose.connect(process.env.DB_URI);
@@ -43,7 +42,6 @@ async function getHome(req, res) {
     res.render("index", { logs: latestLogs, totalsT, totalsCT, totalsBonus });
   } catch (err) {
     console.error(err);
-    teleBOT(err);
     res.status(500).send("Error retrieving logs from database");
   }
 }
@@ -67,16 +65,10 @@ async function processLogs() {
 }
 
 async function crawler() {
-  if (isCrawling) {
-    return; // Exit if crawling is already in progress
-  }
-
-  isCrawling = true; // Set the lock
-
   const browser = await puppeteer.launch({
     executablePath: puppeteerConfig.executablePath,
     args: [`--user-data-dir=${puppeteerConfig.cacheDirectory}`, '--no-sandbox'],
-    headless: "new"
+    headless: "new" // Use the new headless mode
   });
   const page = await browser.newPage();
 
@@ -112,13 +104,8 @@ async function crawler() {
 
     // clear timer
     clearInterval(interval);
-    // Clear the lock
-    isCrawling = false;
   } catch (err) {
-    console.log("Error:", err);
-    teleBOT(err);
-    // Clear the lock in case of error
-    isCrawling = false;
+    console.log("Error waiting for selector:", err);
   }
 
   const divContainingClass = await page.waitForSelector(".bet-btn--win");
@@ -153,8 +140,18 @@ async function crawler() {
 
   // Save to database
   await saveToDatabase(timestamp, msgType);
-
   await browser.close();
+}
+
+async function saveToDatabase(timestamp, coinType) {
+  try {
+    const empire = new EmpireSchema({ timestamp, coin: coinType });
+    await empire.save();
+    console.log("Log saved to database");
+  } catch (err) {
+    teleBOT(`Saving result to database error...`);
+    console.error("Saving result to database error: \n", err);
+  }
 }
 
 async function loop() {
@@ -166,17 +163,6 @@ async function loop() {
   while (true) {
     await crawler();
     await delay(1000); // Delay for 1 second before the next iteration
-  }
-}
-
-async function saveToDatabase(timestamp, coinType) {
-  try {
-    const empire = new EmpireSchema({ timestamp, coin: coinType });
-    await empire.save();
-    console.log("Log saved to database");
-  } catch (err) {
-    teleBOT(`Saving result to database error...`);
-    console.error("Saving result to database error: \n", err);
   }
 }
 
