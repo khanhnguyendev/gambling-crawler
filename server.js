@@ -3,7 +3,6 @@ const express = require("express");
 const app = express();
 const http = require("http").Server(app);
 const io = require("socket.io")(http);
-const config = require("./config/config");
 const fs = require("fs");
 const mongoose = require("mongoose");
 const axios = require("axios");
@@ -14,12 +13,12 @@ require('dotenv').config();
 const EmpireSchema = require("./models/Empire");
 const PORT = process.env.PORT || 3000;
 
-const botToken = process.env.BOT_TOKEN || config.bot.token;
-const chatId = process.env.CHAT_ID || config.bot.chatId;
+const botToken = process.env.BOT_TOKEN;
+const chatId = process.env.CHAT_ID;
 let lastBonus = 0;
 
 //connect to db
-mongoose.connect(process.env.DB_URI || config.db.uri);
+mongoose.connect(process.env.DB_URI);
 
 const connection = mongoose.connection;
 
