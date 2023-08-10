@@ -1,84 +1,74 @@
 const puppeteer = require("puppeteer");
 const express = require("express");
-const app = express();
-const http = require("http").Server(app);
-const io = require("socket.io")(http);
-const fs = require("fs");
+const http = require("http");
 const mongoose = require("mongoose");
 const axios = require("axios");
 const cors = require("cors");
 const puppeteerConfig = require('./.puppeteerrc.cjs');
+const EmpireSchema = require("./models/Empire");
 require('dotenv').config();
 
-const EmpireSchema = require("./models/Empire");
-const PORT = process.env.PORT || 3000;
+const app = express();
+const server = http.createServer(app);
+const io = require("socket.io")(server);
 
+const PORT = process.env.PORT || 3000;
 const botToken = process.env.BOT_TOKEN;
 const chatId = process.env.CHAT_ID;
 let lastBonus = 0;
 
-//connect to db
-mongoose.connect(process.env.DB_URI);
+async function startServer() {
+  await mongoose.connect(process.env.DB_URI);
+  console.log("Connected to MongoDB database");
 
-const connection = mongoose.connection;
+  app.use(express.static(__dirname + "/public"));
+  app.use(express.urlencoded({ extended: true }));
+  app.set("views", __dirname + "/views");
+  app.set("view engine", "ejs");
+  app.use(cors());
 
-connection.once("open", () => {
-  console.log("MongoDB database connected");
-});
+  app.get("/home", getHome);
 
-app.use(cors());
+  server.listen(PORT, () => {
+    teleBOT(`Server started...`);
+    console.log(`Server listening on port ${PORT}`);
+    loop();
+  });
+}
 
-app.use(express.static(__dirname + "/public"));
-app.use(express.urlencoded({ extended: true }));
-app.set("views", __dirname + "/views");
-app.set("view engine", "ejs");
-
-app.get("/home", async (req, res) => {
+async function getHome(req, res) {
   try {
-    let totalsBonus = 0;
-    let totalsT = 0;
-    let totalsCT = 0;
-
-    // Get the total count of logs in the database
-    const endIndex = await EmpireSchema.countDocuments();
-    let startIndex = 0;
-    if (endIndex > 120) {
-      startIndex = endIndex - 120;
-    }
-
-    const latestLogs = await EmpireSchema.find()
-      .skip(startIndex)
-      .limit(endIndex);
-
-    latestLogs.forEach((log) => {
-      if (log._doc.coin == "coin-t") {
-        totalsT += 1;
-      }
-      if (log._doc.coin == "coin-ct") {
-        totalsCT += 1;
-      }
-      if (log._doc.coin == "coin-bonus") {
-        totalsBonus += 1;
-      }
-    });
-
-    res.render("index", {
-      logs: latestLogs,
-      totalsT: totalsT,
-      totalsCT: totalsCT,
-      totalsBonus: totalsBonus,
-    });
+    const [latestLogs, { totalsT, totalsCT, totalsBonus }] = await processLogs();
+    res.render("index", { logs: latestLogs, totalsT, totalsCT, totalsBonus });
   } catch (err) {
     console.error(err);
     res.status(500).send("Error retrieving logs from database");
   }
-});
+}
+
+async function processLogs() {
+  const endIndex = await EmpireSchema.countDocuments();
+  const startIndex = endIndex > 120 ? endIndex - 120 : 0;
+  const latestLogs = await EmpireSchema.find().skip(startIndex).limit(endIndex);
+
+  let totalsT = 0;
+  let totalsCT = 0;
+  let totalsBonus = 0;
+
+  latestLogs.forEach((log) => {
+    if (log.coin === "coin-t") totalsT++;
+    else if (log.coin === "coin-ct") totalsCT++;
+    else if (log.coin === "coin-bonus") totalsBonus++;
+  });
+
+  return [latestLogs, { totalsT, totalsCT, totalsBonus }];
+}
 
 async function crawler() {
   const browser = await puppeteer.launch({
-    // args: [, '--disable-setuid-sandbox'],
     executablePath: puppeteerConfig.executablePath,
-    args: [`--user-data-dir=${puppeteerConfig.cacheDirectory}`,'--no-sandbox']
+    args: [`--user-data-dir=${puppeteerConfig.cacheDirectory}`, '--no-sandbox'],
+    headless: "new" // Use the new headless mode
   });
   const page = await browser.newPage();
 
@@ -91,13 +81,13 @@ async function crawler() {
     // Create an interval that decrements the countdown every second
     const interval = setInterval(async () => {
       countdown--;
-      console.log(`Waiting... ${countdown}`)
+      console.log(`Waiting... ${countdown}`);
       if (countdown === 0) {
-        console.log(`Restarting server...`)
+        console.log(`Restarting server...`);
         // clear timer
         clearInterval(interval);
 
-        let messsage = `Error waiting more than 30 second\nServer will automatically restart...`;
+        let messsage = `Error waiting more than 30 seconds\nServer will automatically restart...`;
         await teleBOT(messsage);
 
         const timestamp = new Date().toISOString();
@@ -119,14 +109,10 @@ async function crawler() {
   }
 
   const divContainingClass = await page.waitForSelector(".bet-btn--win");
-  const divContent = await page.evaluate(
-    (div) => div.innerHTML,
-    divContainingClass
-  );
+  const divContent = await page.evaluate((div) => div.innerHTML, divContainingClass);
 
   const now = new Date();
   const timestamp = now.toLocaleString().replace(", ", "@");
-
   let msgType = "";
 
   if (divContent.includes('alt="t"')) {
@@ -147,62 +133,53 @@ async function crawler() {
     teleBOT(`DICEEEEEE!!!!!!!`);
   }
 
-  // teltegram BOT
+  // Telegram BOT
   if (lastBonus > 25) {
     teleBOT(`${lastBonus} cây chưa có DICE`);
   }
 
-  // save to database
-  const empire = new EmpireSchema({ timestamp: timestamp, coin: msgType });
-  empire
-    .save()
-    .then(() => {
-      console.log("Log saved to database");
-    })
-    .catch((err) => {
-      teleBOT(`Saving result to database error...`);
-      console.error("Saving result to database error: \n", err);
-    });
-
+  // Save to database
+  await saveToDatabase(timestamp, msgType);
   await browser.close();
+}
+
+async function saveToDatabase(timestamp, coinType) {
+  try {
+    const empire = new EmpireSchema({ timestamp, coin: coinType });
+    await empire.save();
+    console.log("Log saved to database");
+  } catch (err) {
+    teleBOT(`Saving result to database error...`);
+    console.error("Saving result to database error: \n", err);
+  }
 }
 
 async function loop() {
   io.on("connection", (socket) => {
-    let clientIp = socket.request.connection.remoteAddress.replace(
-      "::ffff:",
-      ""
-    );
-    console.log("client connected:", clientIp);
+    const clientIp = socket.request.connection.remoteAddress.replace("::ffff:", "");
+    console.log("Client connected:", clientIp);
   });
 
   while (true) {
     await crawler();
-    await delay(1000); // delay for 1 second before next iteration
+    await delay(1000); // Delay for 1 second before the next iteration
   }
 }
 
 async function teleBOT(message) {
-  await axios
-    .post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+  try {
+    await axios.post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       chat_id: chatId,
       text: message,
-    })
-    .then((response) => {
-      console.log("Message sent successfully");
-    })
-    .catch((error) => {
-      console.error("Error sending message:", error);
     });
+    console.log("Message sent successfully");
+  } catch (error) {
+    console.error("Error sending message:", error);
+  }
 }
 
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-loop();
-
-http.listen(PORT, () => {
-  teleBOT(`Server started...`);
-  console.log(`Server listening on port ${PORT}`);
-});
+startServer();
