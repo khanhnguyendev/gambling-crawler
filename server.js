@@ -34,7 +34,7 @@ app.use(express.urlencoded({ extended: true }));
 app.set("views", __dirname + "/views");
 app.set("view engine", "ejs");
 
-app.get("/", async (req, res) => {
+app.get("/home", async (req, res) => {
   try {
     let totalsBonus = 0;
     let totalsT = 0;
