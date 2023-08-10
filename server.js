@@ -50,7 +50,7 @@ async function getHome(req, res) {
 
 async function processLogs() {
   const endIndex = await EmpireSchema.countDocuments();
-  const startIndex = endIndex > 120 ? endIndex - 120 : 0;
+  const startIndex = endIndex > 150 ? endIndex - 150 : 0;
   const latestLogs = await EmpireSchema.find().skip(startIndex).limit(endIndex);
 
   let totalsT = 0;
@@ -186,7 +186,7 @@ async function teleBOT(message) {
       chat_id: chatId,
       text: message,
     });
-    console.log("Message sent successfully");
+    console.log(`[Message sent successfully] => ${message}`);
   } catch (error) {
     console.error("Error sending message:", error);
   }
