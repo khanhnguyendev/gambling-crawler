@@ -142,8 +142,8 @@ async function crawler() {
     console.log(timestamp, "coin-bonus");
     io.emit("log", `coin-bonus`);
     msgType = "coin-bonus";
+    teleBOT(`${lastBonus} ==> DICEEE!!!`);
     lastBonus = 0;
-    teleBOT(`DICEEEEEE!!!!!!!`);
   }
 
   // Telegram BOT
