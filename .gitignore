@@ -2,3 +2,5 @@
 node_modules
 config/config.js
 .cache
+.env
+.vscode

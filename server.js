@@ -4,9 +4,9 @@ const http = require("http");
 const mongoose = require("mongoose");
 const axios = require("axios");
 const cors = require("cors");
-const puppeteerConfig = require('./.puppeteerrc.cjs');
+const puppeteerConfig = require("./.puppeteerrc.cjs");
 const EmpireSchema = require("./models/Empire");
-require('dotenv').config();
+require("dotenv").config();
 
 const app = express();
 const server = http.createServer(app);
@@ -29,6 +29,7 @@ async function startServer() {
   app.use(cors());
 
   app.get("/home", getHome);
+  app.get("/", healthCheck);
 
   server.listen(PORT, () => {
     teleBOT(`Server started...`);
@@ -37,9 +38,24 @@ async function startServer() {
   });
 }
 
+async function healthCheck(req, res) {
+  const healthcheck = {
+    uptime: process.uptime(),
+    message: "OK",
+    timestamp: Date.now(),
+  };
+  try {
+    res.send(healthcheck);
+  } catch (error) {
+    healthcheck.message = error;
+    res.status(503).send();
+  }
+}
+
 async function getHome(req, res) {
   try {
-    const [latestLogs, { totalsT, totalsCT, totalsBonus }] = await processLogs();
+    const [latestLogs, { totalsT, totalsCT, totalsBonus }] =
+      await processLogs();
     res.render("index", { logs: latestLogs, totalsT, totalsCT, totalsBonus });
   } catch (err) {
     console.error(err);
@@ -75,8 +91,8 @@ async function crawler() {
 
   const browser = await puppeteer.launch({
     executablePath: puppeteerConfig.executablePath,
-    args: [`--user-data-dir=${puppeteerConfig.cacheDirectory}`, '--no-sandbox'],
-    headless: "new"
+    args: [`--user-data-dir=${puppeteerConfig.cacheDirectory}`, "--no-sandbox"],
+    headless: "new",
   });
   const page = await browser.newPage();
 
@@ -91,20 +107,12 @@ async function crawler() {
       countdown--;
       console.log(`Waiting... ${countdown}`);
       if (countdown === 0) {
-        console.log(`Restarting server...`);
         // clear timer
         clearInterval(interval);
 
-        let messsage = `Error waiting more than 30 seconds\nServer will automatically restart...`;
+        let messsage = `Missing result...`;
         await teleBOT(messsage);
-
-        const timestamp = new Date().toISOString();
-        const logMsg = `${timestamp}: ${messsage}\n`;
-        fs.appendFile("logs.json", logMsg, (err) => {
-          if (err) {
-            console.error("Failed to write to logs.txt:", err);
-          }
-        });
+        await cleanDatabase();
       }
     }, 1000);
 
@@ -122,7 +130,10 @@ async function crawler() {
   }
 
   const divContainingClass = await page.waitForSelector(".bet-btn--win");
-  const divContent = await page.evaluate((div) => div.innerHTML, divContainingClass);
+  const divContent = await page.evaluate(
+    (div) => div.innerHTML,
+    divContainingClass
+  );
 
   const now = new Date();
   const timestamp = now.toLocaleString().replace(", ", "@");
@@ -159,7 +170,10 @@ async function crawler() {
 
 async function loop() {
   io.on("connection", (socket) => {
-    const clientIp = socket.request.connection.remoteAddress.replace("::ffff:", "");
+    const clientIp = socket.request.connection.remoteAddress.replace(
+      "::ffff:",
+      ""
+    );
     console.log("Client connected:", clientIp);
   });
 
@@ -180,12 +194,21 @@ async function saveToDatabase(timestamp, coinType) {
   }
 }
 
+async function cleanDatabase() {
+  try {
+    await EmpireSchema.deleteMany();
+    console.log("Database cleaned");
+  } catch (err) {
+    console.error("Cleaning database error: \n", err);
+  }
+}
+
 async function teleBOT(message) {
   try {
-    await axios.post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-      chat_id: chatId,
-      text: message,
-    });
+    // await axios.post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+    //   chat_id: chatId,
+    //   text: message,
+    // });
     console.log(`[Message sent successfully] => ${message}`);
   } catch (error) {
     console.error("Error sending message:", error);
